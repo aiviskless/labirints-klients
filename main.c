@@ -368,7 +368,6 @@ int main() {
 			mvprintw(view.top - 2, view.left + 2, "Score");
 			mvprintw(view.top - 2, view.left + 7, "%4d",  game.score);
 
-			attron(COLOR_PAIR(BG_PAIR));
 			int diag_row = view.top + ARENA_HEIGHT_IN_TILES + 1;
 
 			refresh();
