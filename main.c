@@ -28,11 +28,18 @@ int main () {
   // connect to server
   if (connect(socket_desc, (struct sockaddr *) &server, sizeof(server)) < 0) {
     puts("Error while connecting");
-    return 1;
+    return -1;
   } else {
     puts("Connected");
-    start_game();
+    // start_game();
   }
+
+
+  char food_map[10000];
+  // read map sent by server 
+  read(socket_desc, food_map, 10000);
+
+  start_game(food_map);
 
   return 0;
 }

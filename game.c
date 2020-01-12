@@ -5,15 +5,14 @@
 
 struct pair TILE_CENTER = { 3*PIXEL_SIZE, 4*PIXEL_SIZE };
 
-struct view {
+struct window {
 	int top, left;
 	struct pair camera_target_tile;
-	bool zoom_view;
 };
 
-typedef char dot_map_t[ARENA_HEIGHT_IN_TILES][ARENA_WIDTH_IN_TILES];
+typedef char food_map_t[ARENA_HEIGHT_IN_TILES][ARENA_WIDTH_IN_TILES];
 
-dot_map_t new_dot_map;
+food_map_t new_food_map;
 
 const struct level new_level;
 
@@ -41,38 +40,27 @@ char get_arena(int row, int col) {
 	return arena_map[row*ARENA_WIDTH_IN_TILES + col];
 }
 
-struct pair draw_pos(int row, int col, struct view* view) {
+struct pair draw_pos(int row, int col, struct window* window) {
 	struct pair ret = {
-		3 * (col - view->camera_target_tile.x) + view->left,
-		(row - view->camera_target_tile.y) + view->top,
+		3 * (col - window->camera_target_tile.x) + window->left,
+		(row - window->camera_target_tile.y) + window->top,
 	};
 	return ret;
 }
 
-struct pair draw_pos_pair(struct pair p, struct view* view) {
-	return draw_pos(p.y, p.x, view);
+struct pair draw_pos_pair(struct pair p, struct window* window) {
+	return draw_pos(p.y, p.x, window);
 }
 
-void draw_tile(int row, int col, char ch, struct view* view, char fill_ch) {
-	if (view->zoom_view) {
-		int tile_size = DRAW_SIZE;
-		int i;
-		for (i = 0; i < tile_size; ++i) {
-			int j;
-			for (j = 0; j < tile_size; ++j) {
-				mvaddch(tile_size * (row - view->camera_target_tile.y) + view->top + j, tile_size * (col - view->camera_target_tile.x) + view->left + i, fill_ch);
-			}
-		}
-	} else {
-		struct pair pos = draw_pos(row, col, view);
-		mvaddch(pos.y, pos.x, fill_ch);
-		mvaddch(pos.y, pos.x + 1, ch);
-		mvaddch(pos.y, pos.x + 2, fill_ch);
-	}
+void draw_tile(int row, int col, char ch, struct window* window, char fill_ch) {
+	struct pair pos = draw_pos(row, col, window);
+	mvaddch(pos.y, pos.x, fill_ch);
+	mvaddch(pos.y, pos.x + 1, ch);
+	mvaddch(pos.y, pos.x + 2, fill_ch);
 }
 
-void draw_tile_pair(struct pair tile_pos, char ch, struct view* view, char fill_ch) {
-	draw_tile(tile_pos.y, tile_pos.x, ch, view, fill_ch);
+void draw_tile_pair(struct pair tile_pos, char ch, struct window* window, char fill_ch) {
+	draw_tile(tile_pos.y, tile_pos.x, ch, window, fill_ch);
 }
 
 bool is_direction_horizontal(enum dir dir) {
@@ -107,7 +95,8 @@ bool test_player_dir_blocked(enum dir dir, struct pair* next_pos) {
 	}
 	move_in_dir(dir, next_pos, mv_amt);
 	struct pair next_tile = pos_to_tile(next_pos);
-	return !!strchr("/`[]-|+_", get_arena(next_tile.y, next_tile.x));
+	// move chars to const
+	return !!strchr(ARENA_WALLS, get_arena(next_tile.y, next_tile.x));
 }
 
 int seconds_to_frames(int seconds) {
@@ -127,7 +116,7 @@ struct game_data {
 		struct pair player_pos;
 		enum dir player_dir, next_dir;
 
-		dot_map_t dot_map;
+		food_map_t food_map;
 	} level;
 };
 
@@ -143,12 +132,11 @@ void set_player_to_start_position(struct level* level) {
 
 void start_new_level(struct game_data* game_data) {
 	game_data->level = new_level;
-	memcpy(game_data->level.dot_map, new_dot_map, sizeof(new_dot_map));
+	memcpy(game_data->level.food_map, new_food_map, sizeof(new_food_map));
 	set_player_to_start_position(&game_data->level);
 }
 
-struct game_data
-create_new_game() {
+struct game_data create_new_game() {
 	struct game_data game_data = {};
 
 	start_new_level(&game_data);
@@ -156,7 +144,7 @@ create_new_game() {
 	return game_data;
 }
 
-int start_game() {
+int start_game(char *food_map) {
 	// Init curses
 	initscr();
 	cbreak();
@@ -172,7 +160,7 @@ int start_game() {
 		for (col = 0; col < ARENA_WIDTH_IN_TILES; ++ col) {
 			char ch = food_map[row*ARENA_WIDTH_IN_TILES + col];
 			if (ch == '.') {
-				new_dot_map[row][col] = ch;
+				new_food_map[row][col] = ch;
 			}
 		}
 	}
@@ -185,7 +173,7 @@ int start_game() {
 	int last_update = time_in_us();
 	int frame_timer = 0;
 	int next_input = -1;
-	struct view view = { 0 };
+	struct window window = { 0 };
 
 	// uzstāda krāsas jeb krāsu pārus
 	start_color();
@@ -295,20 +283,21 @@ int start_game() {
 						}
 					}
 
+					// uzkāpj uz ēdiena
 					struct pair player_tile = pos_to_tile(&game.level.player_pos);
-					char ch = game.level.dot_map[player_tile.y][player_tile.x];
+					char ch = game.level.food_map[player_tile.y][player_tile.x];
 					if (ch == '.') {
 						game.score += 10;
 					}
-					game.level.dot_map[player_tile.y][player_tile.x] = 0;
+					game.level.food_map[player_tile.y][player_tile.x] = 0;
 				} break;
 			}
 
 			erase();
 
 			// nobīde no malām
-			view.left = 2;
-			view.top = 3;
+			window.left = 3;
+			window.top = 3;
 
 			// uzzīmēt karti
 			for (row = 0; row < ARENA_HEIGHT_IN_TILES; ++row) {
@@ -333,16 +322,16 @@ int start_game() {
 						fill_ch = ch;
 					}
 
-					draw_tile(row, col, draw_ch, &view, fill_ch);
+					draw_tile(row, col, draw_ch, &window, fill_ch);
 				}
 			}
 
 			attron(COLOR_PAIR(FOOD_PAIR));
 			for (row = 0; row < ARENA_HEIGHT_IN_TILES; ++row) {
 				for (col = 0; col < ARENA_WIDTH_IN_TILES; ++col) {
-					char ch = game.level.dot_map[row][col];
+					char ch = game.level.food_map[row][col];
 					if (ch == '.') {
-						draw_tile(row, col, ch, &view, ' ');
+						draw_tile(row, col, ch, &window, ' ');
 					}
 				}
 			}
@@ -354,21 +343,21 @@ int start_game() {
 			// uzzīmē spēlētāja simbolu uz kartes
 			struct pair player_tile = pos_to_tile(&game.level.player_pos);
 			if (player_tile.x >= 0 && player_tile.x < ARENA_WIDTH_IN_TILES) {
-				draw_tile_pair(player_tile, player_symbol, &view, ' ');
+				draw_tile_pair(player_tile, player_symbol, &window, ' ');
 			}
 
 			// spēles sākuma statuss
 			if (game.mode == PAUSED_BEFORE_PLAYING) {
-				struct pair pos = draw_pos(14, 16, &view);
+				struct pair pos = draw_pos(14, 16, &window);
 				mvprintw(pos.y, pos.x, "R E A D Y !");
 			}
 
 			// spēles statuss
 			attron(COLOR_PAIR(BG_PAIR));
-			mvprintw(view.top - 2, view.left + 2, "Score");
-			mvprintw(view.top - 2, view.left + 7, "%4d",  game.score);
+			mvprintw(window.top - 2, window.left + 2, "Score");
+			mvprintw(window.top - 2, window.left + 7, "%4d",  game.score);
 
-			int diag_row = view.top + ARENA_HEIGHT_IN_TILES + 1;
+			int diag_row = window.top + ARENA_HEIGHT_IN_TILES + 1;
 
 			refresh();
 

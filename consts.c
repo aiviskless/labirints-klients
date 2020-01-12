@@ -8,6 +8,7 @@
 #define PLAYER_SPEED 40
 
 // arena map params
+#define ARENA_WALLS "-|+"
 #define ARENA_WIDTH_IN_TILES 36
 #define ARENA_HEIGHT_IN_TILES 30
 #define ARENA_HEIGHT (ARENA_HEIGHT_IN_TILES*TILE_SIZE)
