@@ -2,7 +2,10 @@
 #define TILE_SIZE_IN_PIXELS 8
 #define TILE_SIZE (PIXEL_SIZE * TILE_SIZE_IN_PIXELS)
 
-#define NUM_DIRS 4
+#define DRAW_SIZE 8
+
+// gameplay params
+#define PLAYER_SPEED 40
 
 // arena map params
 #define ARENA_WIDTH_IN_TILES 36
