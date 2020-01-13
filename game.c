@@ -10,9 +10,6 @@ struct window {
 	struct pair camera_target_tile;
 };
 
-typedef char food_map_t[ARENA_HEIGHT_IN_TILES][ARENA_WIDTH_IN_TILES];
-
-food_map_t new_food_map;
 
 const struct level new_level;
 
@@ -115,8 +112,6 @@ struct game_data {
 
 		struct pair player_pos;
 		enum dir player_dir, next_dir;
-
-		food_map_t food_map;
 	} level;
 };
 
@@ -132,7 +127,6 @@ void set_player_to_start_position(struct level* level) {
 
 void start_new_level(struct game_data* game_data) {
 	game_data->level = new_level;
-	memcpy(game_data->level.food_map, new_food_map, sizeof(new_food_map));
 	set_player_to_start_position(&game_data->level);
 }
 
@@ -144,7 +138,7 @@ struct game_data create_new_game() {
 	return game_data;
 }
 
-int start_game(char *food_map) {
+int start_game() {
 	// Init curses
 	initscr();
 	cbreak();
@@ -154,16 +148,6 @@ int start_game(char *food_map) {
 	timeout(0);
 
 	int row, col;
-	
-	// Izveidot ēdiena karti
-	for (row = 0; row < ARENA_HEIGHT_IN_TILES; ++ row) {
-		for (col = 0; col < ARENA_WIDTH_IN_TILES; ++ col) {
-			char ch = food_map[row*ARENA_WIDTH_IN_TILES + col];
-			if (ch == '.') {
-				new_food_map[row][col] = ch;
-			}
-		}
-	}
 
 	// kontrolē PAUSED_BEFORE_PLAYING ilgumu
 	int transition_timer = 0;
@@ -283,13 +267,15 @@ int start_game(char *food_map) {
 						}
 					}
 
-					// uzkāpj uz ēdiena
+					// pārbauda, vai uzkāpj uz ēdiena
 					struct pair player_tile = pos_to_tile(&game.level.player_pos);
-					char ch = game.level.food_map[player_tile.y][player_tile.x];
+					char ch = get_arena(player_tile.y, player_tile.x);
 					if (ch == '.') {
+						// noņem ēdienu
+						arena_map[player_tile.y*ARENA_WIDTH_IN_TILES + player_tile.x] = ' ';
+						
 						game.score += 10;
 					}
-					game.level.food_map[player_tile.y][player_tile.x] = 0;
 				} break;
 			}
 
@@ -304,6 +290,9 @@ int start_game(char *food_map) {
 				for (col = 0; col < ARENA_WIDTH_IN_TILES; ++col) {
 					char ch = get_arena(row, col), draw_ch = ch, fill_ch = ' ';
 					switch (ch) {
+						case '.':
+							attron(COLOR_PAIR(FOOD_PAIR));
+							break;
 						case 'x':
 							draw_ch = ' ';
 							attron(COLOR_PAIR(WALL_PAIR));
@@ -323,16 +312,6 @@ int start_game(char *food_map) {
 					}
 
 					draw_tile(row, col, draw_ch, &window, fill_ch);
-				}
-			}
-
-			attron(COLOR_PAIR(FOOD_PAIR));
-			for (row = 0; row < ARENA_HEIGHT_IN_TILES; ++row) {
-				for (col = 0; col < ARENA_WIDTH_IN_TILES; ++col) {
-					char ch = game.level.food_map[row][col];
-					if (ch == '.') {
-						draw_tile(row, col, ch, &window, ' ');
-					}
 				}
 			}
 

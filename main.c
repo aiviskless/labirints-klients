@@ -13,23 +13,25 @@ void join_server(char *nickname);
 void setup_connection();
 
 int main () {
-  char nickname[NICKNAME_LENGTH];
+  // char nickname[NICKNAME_LENGTH];
 
-  // create socket
-  setup_connection();
+  // // create socket
+  // setup_connection();
 
-  // connect to server
-  if (connect(socket_desc, (struct sockaddr *) &server, sizeof(server)) < 0) {
-    printf("Error while connecting\n");
-    return -1;
-  }
+  // // connect to server
+  // if (connect(socket_desc, (struct sockaddr *) &server, sizeof(server)) < 0) {
+  //   printf("Error while connecting\n");
+  //   return -1;
+  // }
 
-  // get nickname  
-  bzero(nickname, NICKNAME_LENGTH);
-  printf("Connected to server!\nEnter your nickname: ");
-  fgets(nickname, sizeof(nickname), stdin);
+  // // get nickname  
+  // bzero(nickname, NICKNAME_LENGTH);
+  // printf("Connected to server!\nEnter your nickname: ");
+  // fgets(nickname, sizeof(nickname), stdin);
 
-  join_server(nickname);
+  // join_server(nickname);
+
+  start_game();
 
   return 0;
 }
@@ -56,7 +58,7 @@ void join_server(char *nickname) {
     switch (response[0]) {
       case LOBBY_INFO:
         printf("Lobby info code\n");
-        start_game(food_map);
+        start_game();
         break;
       default:
         printf("Please try later...");

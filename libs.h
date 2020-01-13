@@ -1,3 +1,6 @@
+#ifndef LABIRINTH_LIBS_H
+#define LABIRINTH_LIBS_H
+
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <pthread.h>
@@ -10,3 +13,5 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+
+#endif
