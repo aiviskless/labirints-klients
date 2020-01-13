@@ -5,11 +5,25 @@
 
 struct pair TILE_CENTER = { 3*PIXEL_SIZE, 4*PIXEL_SIZE };
 
+struct pair FOOD_LOCATIONS[] = {
+	{1, 3},
+	{2, 8},
+	{1, 8},
+	{10, 4},
+	{1, 20},
+	{4, 11},
+	{27, 15},
+	{24, 26},
+	{15, 17},
+	{12, 17},
+	{27, 32},
+	{2, 14},
+};
+
 struct window {
 	int top, left;
 	struct pair camera_target_tile;
 };
-
 
 const struct level new_level;
 
@@ -27,6 +41,29 @@ enum dir {
 	DOWN,
 	RIGHT
 };
+
+int last_food_location = -1;
+int food_locations_count = sizeof(FOOD_LOCATIONS)/sizeof(FOOD_LOCATIONS[0]);
+
+void generate_food() {
+	int food_location_index;
+	
+	srand(time(NULL));
+
+	food_location_index = rand() % food_locations_count;
+	// don't allow to generate food at the same place twice in a row
+	while (last_food_location == food_location_index) {
+		food_location_index = rand() % food_locations_count;
+	}
+
+	last_food_location = food_location_index;
+
+	int x = FOOD_LOCATIONS[food_location_index].x;
+	int y = FOOD_LOCATIONS[food_location_index].y;
+	
+	// put food in map
+	arena_map[x*ARENA_WIDTH_IN_TILES + y] = '.';
+}
 
 char get_arena(int row, int col) {
 	if (col < 0) {
@@ -139,6 +176,7 @@ struct game_data create_new_game() {
 }
 
 int start_game() {
+	// printf("%d\n", FOOD_LOCATIONS[0].x);
 	// Init curses
 	initscr();
 	cbreak();
@@ -275,6 +313,9 @@ int start_game() {
 						arena_map[player_tile.y*ARENA_WIDTH_IN_TILES + player_tile.x] = ' ';
 						
 						game.score += 10;
+
+						// uzģenerē jaunu ēdienu nejaušā vietā
+						generate_food();
 					}
 				} break;
 			}
