@@ -1,4 +1,10 @@
-#define PIXEL_SIZE 40 
+#ifndef LABIRINTH_CONSTANTS
+#define LABIRINTH_CONSTANTS
+
+#define NICKNAME_LENGTH 16
+#define RESPONSE_LENGTH 256
+
+#define PIXEL_SIZE 40
 #define TILE_SIZE_IN_PIXELS 8
 #define TILE_SIZE (PIXEL_SIZE * TILE_SIZE_IN_PIXELS)
 
@@ -19,3 +25,16 @@
 #define COLOR_GRAY 233
 #define COLOR_YELLOW_BRIGHT 11
 #define COLOR_ORANGE 173
+
+#define JOIN_GAME '0'
+#define MOVE '1'
+#define LOBBY_INFO '2'
+#define GAME_IN_PROGRESS '3'
+#define USERNAME_TAKEN '4'
+#define GAME_START '5'
+#define MAP_ROW '6'
+#define GAME_UPDATE '7'
+#define PLAYER_DEAD '8'
+#define GAME_END '9'
+
+#endif

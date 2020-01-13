@@ -1,6 +1,6 @@
 #include "libs.h"
 #include "helpers.c"
-#include "consts.c"
+#include "consts.h"
 #include "maps.c"
 
 struct pair TILE_CENTER = { 3*PIXEL_SIZE, 4*PIXEL_SIZE };

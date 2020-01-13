@@ -1,7 +1,9 @@
 #include "libs.h"
 
+#ifndef LABIRINTH_HELPERS
+#define LABIRINTH_HELPERS
+
 void* memset(void* s, int c, size_t n);
-void* memcpy(void* d, void* s, size_t n);
 char* strchr(const char* s, int c);
 
 #define MIN(x,y) ((x) < (y) ? (x) : (y))
@@ -62,3 +64,5 @@ int time_in_us() {
 	gettimeofday(&t, NULL);
 	return t.tv_sec * 1000000 + t.tv_usec;
 }
+
+#endif
