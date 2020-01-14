@@ -213,7 +213,9 @@ int start_game() {
 
 	game.mode = PAUSED_BEFORE_PLAYING;
 
-	int frame_time = 16667;
+	// 1 frame / tick = 100 ms
+	int frame_time = 10000;
+
 	while (running) {
 		// get input
 		int ch;
