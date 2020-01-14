@@ -9,41 +9,33 @@ const char* IP_ADDRESS = "192.168.8.105";
 int socket_desc;
 struct sockaddr_in server;
 
-void join_server(char *nickname);
+void join_server();
 void setup_connection();
 
 int main () {
-  // char nickname[NICKNAME_LENGTH];
+  setup_connection();
 
-  // // create socket
-  // setup_connection();
+  join_server();
 
-  // // connect to server
-  // if (connect(socket_desc, (struct sockaddr *) &server, sizeof(server)) < 0) {
-  //   printf("Error while connecting\n");
-  //   return -1;
-  // }
-
-  // // get nickname  
-  // bzero(nickname, NICKNAME_LENGTH);
-  // printf("Connected to server!\nEnter your nickname: ");
-  // fgets(nickname, sizeof(nickname), stdin);
-
-  // join_server(nickname);
-
-  start_game();
+  // start_game();
 
   return 0;
 }
 
-void join_server(char *nickname) {
+void join_server() {
   char join_packet[NICKNAME_LENGTH + 1];
   char response[RESPONSE_LENGTH];
   char response_code;
+  char nickname[NICKNAME_LENGTH];
+
+  printf("Enter your nickname: ");
+  bzero(nickname, NICKNAME_LENGTH);
+  fgets(nickname, sizeof(nickname), stdin);
 
   // add nickname to JOIN_GAME code
   bzero(join_packet, sizeof(join_packet));
   join_packet[0] = JOIN_GAME;
+  // code + nickname
   strcat(join_packet, nickname);
   
   // send JOIN_GAME
@@ -57,53 +49,35 @@ void join_server(char *nickname) {
   } else {
     switch (response[0]) {
       case LOBBY_INFO:
-        printf("Lobby info code\n");
+        printf("Received lobby info\n");
         start_game();
+      case GAME_IN_PROGRESS:
+        printf("Please try later - game in progress\n");
         break;
+      case USERNAME_TAKEN:
+        printf("Your username is taken, try anoher one:\n");
+        join_server();
       default:
-        printf("Please try later...");
+        printf("Please try later...\n");
         break;
     }
   }
 }
 
 void setup_connection() {
-  // char ip_address[14];
-  // char port[4];
-
-  // printf("Enter server's IP address:\n");
-  // fgets(ip_address, sizeof(ip_address), stdin);
-  // printf("Enter server's port:\n");
-  // fgets(port, sizeof(port), stdin);
-
   socket_desc = socket(AF_INET, SOCK_STREAM, 0);
   if (socket_desc == -1) {
-    printf("Error while creating socket");
+    perror("Error while creating socket\n");
   }
 
   server.sin_addr.s_addr = inet_addr(IP_ADDRESS);
   server.sin_family = AF_INET;
   server.sin_port = htons(PORT);
+
+  // connect to server
+  if (connect(socket_desc, (struct sockaddr *) &server, sizeof(server)) < 0) {
+    perror("Error while connecting\n");
+  } else {
+    printf("Connected to server!\n");
+  }
 }
-
-// void packet_handler(unsigned char reply[RESPONSE_LENGTH]) {
-//   unsigned char response_code = reply[0];
-//   printf("Response code is %d \n", response_code);
-
-//   switch (response_code) {
-//     case LOBBY_INFO:
-//       lobbyStatus(reply);
-//       break;
-
-//     case GAME_START:
-//       break;
-
-//     case GAME_UPDATE:
-//       break;
-
-//     case GAME_END:
-//       break;
-
-//     default: break;
-//   }
-// }

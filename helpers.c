@@ -65,4 +65,8 @@ int time_in_us() {
 	return t.tv_sec * 1000000 + t.tv_usec;
 }
 
+int seconds_to_frames(int seconds) {
+	return SECONDS(seconds) / MS(16);
+}
+
 #endif
