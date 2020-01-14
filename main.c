@@ -24,7 +24,7 @@ int main () {
 
 void join_server() {
   char join_packet[NICKNAME_LENGTH + 1];
-  char response[RESPONSE_LENGTH];
+  char response[ARENA_WIDTH_IN_TILES * ARENA_HEIGHT_IN_TILES + 2];
   char response_code;
   char nickname[NICKNAME_LENGTH];
 
