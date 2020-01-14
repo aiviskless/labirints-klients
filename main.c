@@ -16,9 +16,7 @@ int main () {
   setup_connection();
 
   join_server();
-
-  // start_game();
-
+  
   return 0;
 }
 
@@ -55,7 +53,7 @@ void join_server() {
         printf("Please try later - game in progress\n");
         break;
       case USERNAME_TAKEN:
-        printf("Your username is taken, try anoher one:\n");
+        printf("Your username is taken, try another one:\n");
         join_server();
       default:
         printf("Please try later...\n");
