@@ -1,5 +1,7 @@
 #include "libs.h"
 #include "game.c"
+#include "consts.h"
+#include "maps.h"
 
 // server params
 const int PORT = 8887;
@@ -16,7 +18,7 @@ int main () {
   setup_connection();
 
   join_server();
-  
+
   return 0;
 }
 
@@ -42,19 +44,22 @@ void join_server() {
   }
 
   // get reply
-  if (read(socket_desc, response, RESPONSE_LENGTH) < 0) {
+  if (read(socket_desc, response, ARENA_WIDTH_IN_TILES * ARENA_HEIGHT_IN_TILES + 2) < 0) {
     puts("Read from server failed");
   } else {
     switch (response[0]) {
       case LOBBY_INFO:
         printf("Received lobby info\n");
-        start_game();
       case GAME_IN_PROGRESS:
         printf("Please try later - game in progress\n");
         break;
       case USERNAME_TAKEN:
         printf("Your username is taken, try another one:\n");
         join_server();
+      case MAP_ROW:
+        // get map and start game
+        strcat(arena_map, &response[1]);
+        start_game();
       default:
         printf("Please try later...\n");
         break;
